@@ -5,81 +5,118 @@
     <title>Student Management System</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f6f8fa;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background: #24292e;
-            color: #fff;
-            padding: 1rem 2rem;
-            text-align: center;
-        }
-        main {
-            max-width: 800px;
-            margin: 2rem auto;
-            background: #fff;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 0 8px rgba(0,0,0,0.05);
-        }
-        h1, h2 {
-            color: #2d3748;
-        }
-        ul {
-            line-height: 1.8;
-        }
-        .feature-list {
-            background: #f0f3f6;
-            padding: 1rem;
-            border-radius: 6px;
-        }
-        footer {
-            margin-top: 2rem;
-            text-align: center;
-            color: #666;
-        }
-        @media (max-width: 600px) {
-            main {
-                padding: 1rem;
-            }
-            header {
-                padding: 1rem;
-            }
-        }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; }
+        header { background: #2c3e50; color: #fff; padding: 1rem 0; text-align: center; }
+        main { max-width: 800px; margin: 2rem auto; background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px #ccc; }
+        h1, h2 { margin-top: 0; }
+        .form-section, .list-section { margin-bottom: 2rem; }
+        label { display: block; margin: 0.5rem 0 0.2rem; }
+        input, select { padding: 0.5rem; width: 100%; margin-bottom: 1rem; box-sizing: border-box; }
+        button { background: #2980b9; color: #fff; border: none; padding: 0.7rem 1.5rem; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #3498db; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { border: 1px solid #ddd; padding: 0.7rem; text-align: left; }
+        th { background: #2980b9; color: #fff; }
+        tr:nth-child(even) { background: #f2f2f2; }
+        .actions button { margin-right: 0.5rem; padding: 0.4rem 1rem; }
     </style>
 </head>
 <body>
     <header>
         <h1>Student Management System</h1>
+        <p>Manage Enrollment, Attendance & Grades</p>
     </header>
     <main>
-        <h2>Overview</h2>
-        <p>
-            A Student Management System is an application that helps educational institutions manage student data
-            and administrative tasks. It typically includes features for student enrollment, attendance tracking, grade
-            management, and communication between students, teachers, and parents.
-        </p>
+        <!-- Enrollment Form -->
+        <section class="form-section">
+            <h2>Enroll Student</h2>
+            <form id="enrollForm">
+                <label for="studentName">Student Name:</label>
+                <input type="text" id="studentName" name="studentName" required>
+                <label for="studentClass">Class:</label>
+                <input type="text" id="studentClass" name="studentClass" required>
+                <label for="studentEmail">Email:</label>
+                <input type="email" id="studentEmail" name="studentEmail" required>
+                <button type="submit">Enroll</button>
+            </form>
+        </section>
 
-        <div class="feature-list">
-            <h2>Key Features</h2>
-            <ul>
-                <li><strong>Student Enrollment:</strong> Register and manage students efficiently.</li>
-                <li><strong>Attendance Tracking:</strong> Record and monitor daily attendance.</li>
-                <li><strong>Grade Management:</strong> Input, update, and view student grades.</li>
-                <li><strong>Communication:</strong> Facilitate messaging between students, teachers, and parents.</li>
-                <li><strong>Reports:</strong> Generate reports on student performance and attendance.</li>
-            </ul>
-        </div>
-
-        <p>
-            The system streamlines administrative processes and enhances the overall educational experience for students, teachers, and parents.
-        </p>
+        <!-- Student List -->
+        <section class="list-section">
+            <h2>Student List</h2>
+            <table id="studentTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Class</th>
+                        <th>Email</th>
+                        <th>Attendance</th>
+                        <th>Grade</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Student rows will be rendered here -->
+                </tbody>
+            </table>
+        </section>
     </main>
-    <footer>
-        &copy; 2025 Student Management System Project
-    </footer>
+
+    <script>
+        // Simple in-memory storage for demo
+        const students = [];
+
+        function renderTable() {
+            const tbody = document.querySelector("#studentTable tbody");
+            tbody.innerHTML = "";
+            students.forEach((student, idx) => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${student.name}</td>
+                    <td>${student.class}</td>
+                    <td>${student.email}</td>
+                    <td>
+                        <select onchange="updateAttendance(${idx}, this.value)">
+                            <option value="Present" ${student.attendance === "Present" ? "selected" : ""}>Present</option>
+                            <option value="Absent" ${student.attendance === "Absent" ? "selected" : ""}>Absent</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" value="${student.grade || ''}" onchange="updateGrade(${idx}, this.value)" style="width:50px;">
+                    </td>
+                    <td class="actions">
+                        <button onclick="removeStudent(${idx})">Remove</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById("enrollForm").onsubmit = function(e) {
+            e.preventDefault();
+            const name = document.getElementById("studentName").value.trim();
+            const studentClass = document.getElementById("studentClass").value.trim();
+            const email = document.getElementById("studentEmail").value.trim();
+            students.push({ name, class: studentClass, email, attendance: "Present", grade: "" });
+            renderTable();
+            e.target.reset();
+        };
+
+        window.removeStudent = function(idx) {
+            students.splice(idx, 1);
+            renderTable();
+        };
+
+        window.updateAttendance = function(idx, value) {
+            students[idx].attendance = value;
+        };
+
+        window.updateGrade = function(idx, value) {
+            students[idx].grade = value;
+        };
+
+        // Initial render
+        renderTable();
+    </script>
 </body>
 </html>
